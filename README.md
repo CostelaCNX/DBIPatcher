@@ -65,8 +65,8 @@ would be of course manualy checking all strings.
 ```bash
 git clone <repository-url>
 cd <repository-directory>
-make translate-810
-```
+~~make translate-810~~
+make translate-810 LANG=```
 
 ### Manual Usage
 The `dbipatcher` utility provides several operations:
