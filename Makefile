@@ -15,6 +15,7 @@ LDLIBS =-lzstd
 SRCDIR = src
 BUILDDIR = build
 BINDIR = bin
+TEMPDIR = temp
 
 SOURCES = $(shell find $(SRCDIR) -name '*.c')
 
@@ -37,17 +38,21 @@ $(BUILDDIR):
 $(BINDIR):
 	@mkdir -p $(BINDIR)
 
+$(TEMPDIR):
+	@mkdir -p $(TEMPDIR)
+
 clean:
-	@rm -rf $(BUILDDIR)
+	@rm -rf $(BUILDDIR) $(TEMPDIR)
 
 run: $(TARGET)
 	@$(TARGET)
 
-translate-810: $(TARGET)
-	@$(TARGET) --extract dbi/DBI.810.ru.nro --output /tmp/DBI_810
-	@$(TARGET) --convert /tmp/DBI_810/rec6.bin --output translate/rec6.810.ru.txt --keys /tmp/DBI_810/keys_ru.txt
-	@$(TARGET) --convert translate/rec6.810.en.txt --output /tmp/DBI_810/rec6.en.bin --keys /tmp/DBI_810/keys_en.txt
-	@$(TARGET) --patch /tmp/DBI_810/rec6.en.bin --binary dbi/DBI.810.ru.nro --output /tmp/DBI_810/bin/DBI.810.en.nro --slot 6 
+translate-810: $(TARGET) | $(TEMPDIR)
+	@$(TARGET) --extract dbi/DBI.810.ru.nro --output $(TEMPDIR)/DBI_810
+	@$(TARGET) --convert $(TEMPDIR)/DBI_810/rec6.bin --output translate/rec6.810.ru.txt --keys $(TEMPDIR)/DBI_810/keys_ru.txt
+	@$(TARGET) --extract-keys dbi/DBI.810.ru.nro --output $(TEMPDIR)/DBI_810/keys_$(LANG).txt --lang $(LANG)
+	@$(TARGET) --convert translate/rec6.810.$(LANG).txt --output $(TEMPDIR)/DBI_810/rec6.$(LANG).bin --keys $(TEMPDIR)/DBI_810/keys_$(LANG).txt
+	@$(TARGET) --patch $(TEMPDIR)/DBI_810/rec6.$(LANG).bin --binary dbi/DBI.810.ru.nro --output $(TEMPDIR)/DBI_810/bin/DBI.810.$(LANG).nro --slot 6
 
 debug: $(TARGET)
 	@valgrind $(TARGET)
